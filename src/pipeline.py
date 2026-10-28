@@ -50,7 +50,13 @@ def make_pipeline(kind="lr", analyzer="word"):
     if kind == "nb":
         clf = MultinomialNB(alpha=0.1)
     elif kind == "lr":
-        clf = LogisticRegression(max_iter=1000, C=3.0, random_state=SEED)
+        # Ajout de class_weight="balanced" pour compenser le déséquilibre
+        clf = LogisticRegression(
+            max_iter=1000, 
+            C=3.0, 
+            random_state=SEED, 
+            class_weight="balanced"  
+        )
     elif kind == "nb_cal":
         clf = CalibratedClassifierCV(MultinomialNB(alpha=0.1), method="sigmoid", cv=5)
     elif kind == "lr_cal":
@@ -71,15 +77,33 @@ def predict(pipe, text: str):
 
 
 def contributions(pipe, text: str):
-    """Per-feature contribution to the log-odds of 'phish' for a LOGISTIC REGRESSION pipeline:
-    contribution = tf-idf value x coefficient.  Positive -> pushes toward phish."""
-    vec, clf = pipe.named_steps["tfidf"], pipe.named_steps["clf"]
+    """Per-feature contribution to the log-odds of 'phish' for a pipeline.
+
+    - Logistic regression : contribution = tf-idf value × coef_ (exact, additif au log-odds).
+    - Multinomial NB      : contribution ≈ tf-idf value × (log P(f|phish) − log P(f|legit)).
+      Ce n'est pas une vraie contribution au log-odds (NB n'est pas linéaire en log-odds
+      avec TF-IDF), mais c'est une approximation standard pour l'explication.
+
+    Positive → pousse vers phish. Negative → pousse vers legit.
+    """
+    vec = pipe.named_steps["tfidf"]
+    clf = pipe.named_steps["clf"]
     X = vec.transform([text])
     names = vec.get_feature_names_out()
     row = X.tocoo()
-    contrib = {names[j]: float(v * clf.coef_[0][j]) for j, v in zip(row.col, row.data)}
-    return dict(sorted(contrib.items(), key=lambda kv: -abs(kv[1])))
 
+    if hasattr(clf, "coef_"):
+        # --- Régression logistique : contribution exacte = tfidf × coef ---
+        weights = clf.coef_[0]
+        contrib = {names[j]: float(v * weights[j]) for j, v in zip(row.col, row.data)}
+    else:
+        # --- Naive Bayes : différence de log-probabilités par feature ---
+        # feature_log_prob_[1] = log P(feature | phish), [0] = log P(feature | legit)
+        logp = clf.feature_log_prob_
+        delta = logp[1] - logp[0]        # vecteur de taille n_features
+        contrib = {names[j]: float(v * delta[j]) for j, v in zip(row.col, row.data)}
+
+    return dict(sorted(contrib.items(), key=lambda kv: -abs(kv[1])))
 
 def word_weights(pipe, text: str):
     """Contribution of each lower-cased word of the ORIGINAL text (unigram features) - used to highlight."""

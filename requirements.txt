@@ -3,3 +3,6 @@ pandas
 scikit-learn
 matplotlib
 streamlit
+datasets
+transformers
+imbalanced-learn

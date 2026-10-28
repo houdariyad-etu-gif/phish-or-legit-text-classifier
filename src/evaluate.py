@@ -85,8 +85,9 @@ def main():
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
+    plt.style.use('dark_background')
     fig, axes = plt.subplots(1, 2, figsize=(10.5, 4))
-    axes[0].imshow(cm, cmap="Greys")
+    axes[0].imshow(cm, cmap="Blues")
     for i in range(2):
         for j in range(2):
             axes[0].text(j, i, int(cm[i, j]), ha="center", va="center", fontsize=16,
@@ -94,8 +95,8 @@ def main():
     axes[0].set_xticks([0, 1]); axes[0].set_xticklabels(["pred legit", "pred phish"])
     axes[0].set_yticks([0, 1]); axes[0].set_yticklabels(["true legit", "true phish"])
     axes[0].set_title("Confusion matrix (Logistic Regression)")
-    axes[1].plot([0, 1], [0, 1], "k--", lw=1, label="perfect calibration")
-    for (name, c) in (("Naive Bayes", "#8a8a8a"), ("Logistic Regression", "#333333"), ("NB + calibration", "#7a7a7a")):
+    axes[1].plot([0, 1], [0, 1], "k--", lw=1, label="perfect calibration", color="#9ca3af")
+    for (name, c) in (("Naive Bayes", "#60a5fa"), ("Logistic Regression", "#34d399"), ("NB + calibration", "#f472b6")):
         frac, mean = calibration_curve(yte, probs[name], n_bins=8, strategy="quantile")
         axes[1].plot(mean, frac, marker="o", color=c, label=name)
     axes[1].set_xlabel("mean predicted score"); axes[1].set_ylabel("observed share of phish")
