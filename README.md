@@ -11,7 +11,7 @@ streamlit run app.py
 python -m src.evaluate   # -> results/metrics.json, failures.txt, phish_results.png
 
 ## App publique
-https://<ton-app>.streamlit.app
+https://phish-or-legit.streamlit.app
 
 ## Avertissement
 Données synthétiques. L'outil aide une décision humaine, il ne bloque pas les messages.
