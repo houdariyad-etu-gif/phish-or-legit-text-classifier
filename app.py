@@ -107,12 +107,12 @@ with col_left:
     EXAMPLES = {
         "🎣 Phishing évident":
             "Northbank: your account has been locked. Verify now http://bit.ly/ab12cd",
-        "🎣 Phishing raté (FN, score ≈ 0.13)":
+        "🎣 Phishing raté (FN, score ≈ 0.31)":
             "Dear customer, A payment of $7.67 is pending. You can manage this in "
             "the app settings. https://vg9ys-login.info/aqjv",
         "✅ Legit évident":
             "Hi, are we still on for dinner at 7:30? Thanks",
-        "✅ Legit classé phishing (FP, score ≈ 0.61)":
+        "✅ Legit classé phishing (FP, score ≈ 0.84)":
             "Northban: there is a message about your account. Log in to confirm. "
             "https://docs.example.com/d/7estf1",
     }
@@ -218,7 +218,6 @@ with tab_how:
 
 with tab_metrics:
     lr = metrics["Logistic Regression"]
-    k1, k2, k3, k4 = st.columns(4)
     c1, c2, c3, c4 = st.columns(4)
     for col, title, value in zip(
         [c1, c2, c3, c4],
@@ -241,11 +240,12 @@ with tab_metrics:
 with tab_tradeoff:
     st.line_chart(tradeoff_df, height=340)
     st.markdown(f"**Seuil actuel : `{threshold:.2f}`** — monter = precision ↑, recall ↓.")
+    # Tableau avec les résultats du class_weight='balanced'
     st.dataframe(pd.DataFrame({
-        "seuil": [0.20, 0.35, 0.50, 0.70, 0.90],
-        "precision": [0.604, 0.672, 0.747, 0.893, 1.000],
-        "recall": [0.930, 0.800, 0.710, 0.500, 0.090],
-        "F1": [0.732, 0.731, 0.728, 0.641, 0.165],
+        "seuil": [0.2, 0.35, 0.5, 0.7, 0.9],
+        "precision": [0.458, 0.563, 0.640, 0.721, 0.938],
+        "recall": [0.990, 0.940, 0.890, 0.750, 0.450],
+        "F1": [0.627, 0.704, 0.745, 0.735, 0.608],
     }), use_container_width=True, hide_index=True)
 
 st.divider()
